@@ -5,22 +5,27 @@ import (
 
 	"github.com/el-zacharoo/auth/handler"
 	"github.com/rs/cors"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
+
+	pbcnn "github.com/el-zacharoo/auth/internal/gen/auth/v1/authv1connect"
 )
 
 const port = "localhost:8082"
 
 func main() {
-	h := &handler.SignInServer{}
+
+	svc := &handler.SignInServer{}
 
 	c := setCORS()
 	mux := http.NewServeMux()
-	mux.HandleFunc("/user", h.GetUser)
-	mux.HandleFunc("/login", h.SignIn)
+	path, h := pbcnn.NewAuthServiceHandler(svc)
+	mux.Handle(path, h)
 	hndlr := c.Handler(mux)
 
 	http.ListenAndServe(
 		port,
-		hndlr,
+		h2c.NewHandler(hndlr, &http2.Server{}),
 	)
 }
 

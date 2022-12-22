@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package auth.v1;
+
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+
+// user is created in auth0 here
+service AuthService {
+  // adding user to auth0.
+  rpc CreateAccount(CreateAccountRequest) returns (CreateAccountResponse){
+     option (google.api.http) = {
+      post : "/CreateAccount"
+      body : "*"
+    };
+  };  
+  // logs a user in
+  rpc SignIn(SignInRequest) returns (SignInResponse){
+     option (google.api.http) = {
+      post : "/SignIn"
+      body : "*"
+    };
+  };
+  // gets a user from auth0
+  rpc GetAccount(GetAccountRequest) returns (GetAccountResponse){
+     option (google.api.http) = {
+      post : "/GetAccount"
+      body : "*"
+    };
+  };
+}
+
+// Create contains information needed to create a new authUser.
+message CreateAccountRequest  { 
+  RegisterAuthUser register_auth_user = 1 [(validate.rules).message.required = true]; 
+}
+// CreateResponse returns the newly created authUser for the Create method.
+message CreateAccountResponse { 
+  RegisterAuthUser register_auth_user = 1; 
+}
+
+// logs a user in
+message SignInRequest {
+   AuthUserSignIn auth_user_sign_in = 1 [(validate.rules).message.required = true];
+}
+// returns the user that was signed in
+message SignInResponse {
+    string access_token = 1;
+    string id_token = 2;
+    string scope = 3;
+    string token_type = 4;
+    int32 expires_in = 5;
+}
+
+// GetAccountRequest contains the information needed to get a user from auth0
+message GetAccountRequest {
+    string access_token = 1;
+}
+
+// GetAccountResponse returns the user that was requested
+message GetAccountResponse {
+   UserInfo user_info = 1;
+}
+
+// Data types for requests and responses
+// values needed to sign in a user
+message AuthUserSignIn {
+    string username = 1;
+    string password = 2;
+    string grant_type = 3;
+    string audience = 4;
+    string client_id = 5;
+    string client_secret = 6;
+}
+
+// conatains the values used for submitting an entry to auth0 
+message RegisterAuthUser { 
+    string given_name = 1;
+    string family_name = 2;
+    string email = 3;
+    string password = 4;
+    string connection  = 5;
+    string client_id = 6;
+}
+
+// user details
+message UserInfo {
+    string email = 1;
+    string email_verified = 2;
+    string name = 3;
+    string nickname = 4;
+    string picture = 5;
+    string sub = 6;
+    string updated_at = 7;
+    string user_id = 8;
+    string username = 9;
+}
