@@ -6,9 +6,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
+	"os"
 
 	"github.com/bufbuild/connect-go"
+	"github.com/joho/godotenv"
 
 	pb "github.com/el-zacharoo/auth/internal/gen/auth/v1"
 	pbcnn "github.com/el-zacharoo/auth/internal/gen/auth/v1/authv1connect"
@@ -20,9 +23,22 @@ type SignInServer struct {
 
 const auth0Domain = "https://react-messaging.au.auth0.com"
 
+// retrives environment variables
+func loadEnv(env string) (uri string) {
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("Error loading .env file ")
+	}
+	uri = os.Getenv(env)
+	return uri
+}
+
 func (s *SignInServer) SignIn(ctx context.Context, req *connect.Request[pb.SignInRequest]) (*connect.Response[pb.SignInResponse], error) {
 	reqMsg := req.Msg
 	auth := reqMsg.AuthUserSignIn
+
+	auth.ClientId = loadEnv("AUTH_CLIENT_ID")
+	auth.ClientSecret = loadEnv("AUTH_CLIENT_SECRET")
 
 	json_data, err := json.Marshal(auth)
 	if err != nil {
